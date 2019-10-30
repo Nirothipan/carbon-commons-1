@@ -1330,7 +1330,6 @@ function displayPasswordField() {
 			} else {
 				var changePassword = "false";
 				password = document.getElementById('newPassword').value;
-                password = encodeURIComponent(password);
 				if (document.getElementById('changePassword') != null) {
 					changePassword = document.getElementById('changePassword').checked;
 				}
