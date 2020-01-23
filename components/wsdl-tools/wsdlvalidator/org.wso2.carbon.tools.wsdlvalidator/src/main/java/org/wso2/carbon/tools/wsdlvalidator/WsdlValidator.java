@@ -19,6 +19,7 @@ package org.wso2.carbon.tools.wsdlvalidator;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.xs.XSModel;
 import org.eclipse.wst.wsdl.validation.internal.Constants;
 import org.eclipse.wst.wsdl.validation.internal.ControllerValidationInfo;
@@ -72,6 +73,7 @@ public class WsdlValidator {
     public static final String WSDL_VALID_I = "WSDL DOCUMENT IS VALID";
     public static final String WSDL_INVALID = " WSDL DOCUMENT IS INVALID";
     public static final String WSDL_INVALID_I = " WSDL DOCUMENT IS INVALID";
+    private static final int ENTITY_EXPANSION_LIMIT = 0;
 
     private static final Log log = LogFactory.getLog(WsdlValidator.class);
 
@@ -263,6 +265,8 @@ public class WsdlValidator {
         try {
             dbf.setValidating(true);
             dbf.setNamespaceAware(true);
+            dbf.setXIncludeAware(false);
+            dbf.setExpandEntityReferences(false);
 
             // Perform namespace processing
             dbf.setFeature("http://xml.org/sax/features/namespaces", true);
@@ -275,6 +279,20 @@ public class WsdlValidator {
 
             // Ignore the external DTD completely.
             dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+            dbf.setFeature(org.apache.xerces.impl.Constants.SAX_FEATURE_PREFIX +
+                               org.apache.xerces.impl.Constants.EXTERNAL_GENERAL_ENTITIES_FEATURE, false);
+
+            dbf.setFeature(org.apache.xerces.impl.Constants.SAX_FEATURE_PREFIX +
+                               org.apache.xerces.impl.Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE, false);
+
+            dbf.setFeature(org.apache.xerces.impl.Constants.XERCES_FEATURE_PREFIX +
+                               org.apache.xerces.impl.Constants.LOAD_EXTERNAL_DTD_FEATURE, false);
+
+            SecurityManager securityManager = new SecurityManager();
+            securityManager.setEntityExpansionLimit(ENTITY_EXPANSION_LIMIT);
+            dbf.setAttribute( org.apache.xerces.impl.Constants.XERCES_PROPERTY_PREFIX +
+                        org.apache.xerces.impl.Constants.SECURITY_MANAGER_PROPERTY, securityManager);
 
             DocumentBuilder db = dbf.newDocumentBuilder();
             InputSource inputSource = new InputSource();
